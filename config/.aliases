@@ -1,0 +1,165 @@
+# /////////////////////////////////////////////////////////////////////////////
+# ALIASES
+# Note: These aliases are tailored for macOS and Z-shell
+# /////////////////////////////////////////////////////////////////////////////
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## MAKE TERMINAL BETTER
+alias mkdir='mkdir -p'           # Create intermediate dirs as necessary
+alias cpv='cp -v'                # Verbose cp
+alias rm='rmtrash'               # Use Finder trash can
+alias grep='grep --color=auto'   # Colorize grep
+alias ping='ping -c 3'           # Max 3 ping attempts
+alias wget='wget -c'             # Enable resumed downloads
+alias rsync="rsync -avvz --times --stats --checksum --human-readable \
+             --itemize-changes --progress \
+             --out-format='[%t] [%i] (Last Modified: %M) (bytes: %-10l) %-100n'"
+alias dirsize='du -h -d 1 | gsort -h' # Report size of all files/dirs, sorted by size
+alias please=sudo                # Be nice
+
+mcd() {mkdir $1; cd $1}          # mkdir then cd into it
+cdl() {cd $1; ls}                # cd into dir then ls
+
+backup() {cp -rp $1 $1.backup}   # quickly create a backup of any file
+backupl() {cp -rp $1 $1.backup.$(date +"%Y%m%d")}
+backupll() {cp -rp $1 $1.backup.$(date +"%Y%m%d").$(date +"%H%M%S")}
+
+# Add a fancy clock to top-right of shell
+alias clock='while sleep 1;do tput sc;tput cup 0 $(($(tput cols)-29));date;tput rc;done &'
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## FINDER
+alias hidedesk='defaults write com.apple.finder CreateDesktop false; killall Finder'
+alias showdesk='defaults write com.apple.finder CreateDesktop true; killall Finder'
+alias ql='qlmanage -p'           # Finder quicklook
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## TMUX
+alias ta='tmux attach'
+alias tls='tmux ls'
+alias tat='tmux attach -t'
+alias tns='tmux new-session -s'
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## MAIL -- Neomutt & offlineimap stuff
+alias iumail='neomutt -F ~/.mutt/.muttrc-IU'
+alias umdmail='neomutt -F ~/.mutt/.muttrc-UMD'
+alias gmail='neomutt -F ~/.mutt/.muttrc-Personal'
+alias gpsomail='neomutt -F ~/.mutt/.muttrc-GPSO'
+
+# Kill all offlineimap processes
+killmail() {
+  for proc in $(ps aux | grep offlineimap | grep -v grep | grep python | awk '{print $2}')
+  do
+    kill -9 $proc
+  done
+}
+
+# Restart offlineimap loop
+alias rsm='~/bin/run-offlineimap'
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## LEDGER -- for tracking finances with ledger-cli
+alias balance='ledger balance Assets Reimbursements Liabilities and not Liabilities:Loan'
+alias balance-full='ledger balance Assets Reimbursements Liabilities'
+alias checking='ledger balance Assets:Checking'
+alias register='ledger register --wide '
+alias assets='ledger balance Assets'
+alias debts='ledger balance Liabilities'
+alias owed='ledger balance Assets:Receivable'
+alias budget='ledger budget'
+
+# Convert Chase CSV files to Ledger format
+ChaseToLedger() {
+  # Make a temporary copy to work with so we don't destroy the original
+  csvFile=`basename $1`
+  cp $1 /tmp/$csvFile
+
+  # Move to temp area to work
+  pushd /tmp > /dev/null
+
+  # Strip the provided header out
+  sed '1d' $csvFile > afile; mv afile $csvFile
+
+  # Reverse the lines in the file
+  tail -r $csvFile > bfile; mv bfile $csvFile
+
+  # Remove any extra whitespace
+  tr -s " " < $csvFile > cfile; mv cfile $csvFile
+
+  # Add the ledger-readable header
+  echo ",date,payee,amount,,,," > dfile; cat $csvFile >> dfile; mv dfile $csvFile
+
+  # Run ledger convert
+  touch efile
+  ledger convert $csvFile --file efile --input-date-format "%m/%d/%Y" --invert > ffile
+  rm efile
+
+  # Prettify it
+  sed -i -e 's/Equity:Unknown/Assets:Checking:Chase/g' ffile
+  sed -i -e 's/BLOOMINGTON IN//g' ffile
+  sed -i -e 's/*//g' ffile
+  sed -i -e 's/  / /g' ffile
+
+  cat ffile
+  rm ffile
+
+  popd > /dev/null
+}
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## TASKWARRIOR -- for tracking todos
+alias t='task'
+alias tchart='task burndown.daily'
+alias tproj='task summary'
+alias novatask='task +nova'
+alias halotask='task +halo'
+alias personaltask='task +personal'
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## FERMILAB
+alias k='kinit -f jvasel'                    # Quick Kerberos auth
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## RC STUFF
+alias rc='vi ~/.zshrc'                       # Quick-edit .zshrc
+alias src='source ~/.zshrc'                  # Source .zshrc
+alias aliases='vi ~/.aliases'                # Quick-edit this file
+
+
+#//////////////////////////////////////////////////////////////////////////////
+## MISC
+
+# Shortcuts
+alias yd='youtube-dl'                        # Download youtube videos
+alias music='ncmpcpp'                        # open ncmpcpp player
+alias tv='terminal_velocity'                 # Terminal Velocity notetaking tool
+alias sub='sublime'                          # ql SublimeText
+alias speedtest='speedtest-cli --bytes'      # Perform down/upload speed test
+alias math='/Applications/Mathematica.app/Contents/MacOS/MathKernel'  # Mathematica CLI
+
+# Common routines
+alias gitpush='git push -u origin master'    # Push git repo
+alias timer='echo "Timer started. Stop with Ctrl-D." && date && time cat && date'
+alias svndiff='svn diff | colordiff'         # Make it easier to colordiff
+
+# Open file with VLC
+vlc () { /Applications/VLC.app/Contents/MacOS/VLC $1 &; }
+
+# Print a histogram of commands in history. Why? Why not...
+histdist () { history|awk '{print $2}'|sort|uniq -c|sort -rn|head -30|awk '!max{max=$1;}{r="";i=s=100*$1/max;while(i-->0)r=r"#";printf "%50s %5d %s %s",$2,$1,r,"\n";}' }
+
+# Separate $PATH into separate lines (good for looping)
+alias path_lines='tr ":" "\n" <<< "$PATH"'
+
+# Source private aliases (for security purposes)
+source ~/.aliases-sensitive
+source ~/.aliases-ssh
