@@ -1,19 +1,15 @@
-dotfiles
-=============================
+# The dotfiles of Justin Vasel
+
+My personal collection of dotfiles and configurations, managed by `stow`.
 
 
-My personal collection of dotfiles and configurations
-
-
-Configuration
-----------
+## Configuration
 
 You probably want to edit `.stow-local-ignore`.  It already is configured to ignore the `.git` files as well as `Readme` and `Makefile`.   Use the `-n` option as in `stow -n -v --target="$HOME" -S .` to check which links will be created.  The `--adopt` option may also be useful.
 
 
 
-Installation
--------------
+## Installation
 
 dotfiles can be copied in or being adopted using: `stow -v --target="$HOME" --adopt . `.
 
@@ -24,11 +20,8 @@ Use `make install` to script installation of all necessary components.
 Use `make update` for updates.
 
 
-Further reading
----------------
+## Further reading
 
-`man stow`
-
-`man git`
-
-`man make`
+- `man stow`
+- `man git`
+- `man make`
