@@ -161,7 +161,3 @@ histdist () { history|awk '{print $2}'|sort|uniq -c|sort -rn|head -30|awk '!max{
 
 # Separate $PATH into separate lines (good for looping)
 alias path_lines='tr ":" "\n" <<< "$PATH"'
-
-# Source private aliases (for security purposes)
-source ~/.aliases-sensitive
-source ~/.aliases-ssh
